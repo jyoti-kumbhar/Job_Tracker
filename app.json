@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "jobtracker",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "android": {
       "package": "com.jobtracker.app",
       "permissions": [
