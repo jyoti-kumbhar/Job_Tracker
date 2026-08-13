@@ -34,5 +34,9 @@
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3"
   },
+  "overrides": {
+    "image-size": "^1.2.0",
+    "uuid": "^11.1.1"
+  },
   "private": true
 }
