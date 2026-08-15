@@ -14,6 +14,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="welcome" />
         <Stack.Screen name="search" />
         <Stack.Screen name="board" />
         <Stack.Screen name="application/new" options={{ presentation: 'modal' }} />

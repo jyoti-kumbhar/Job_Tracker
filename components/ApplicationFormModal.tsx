@@ -9,6 +9,7 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
 import { JobApplication, ApplicationFormData } from '../types/application';
 import { ApplicationForm } from './ApplicationForm';
@@ -28,6 +29,8 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   onSave,
   onDelete,
 }) => {
+  const insets = useSafeAreaInsets();
+
   const handleSave = (data: ApplicationFormData) => {
     onSave(data, editingApplication?.id);
     onClose();
@@ -71,7 +74,14 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
           accessibilityLabel="Close form modal backdrop"
         />
 
-        <View style={styles.bottomSheet}>
+        <View
+          style={[
+            styles.bottomSheet,
+            {
+              paddingBottom: Math.max(insets.bottom, 16) + 4,
+            },
+          ]}
+        >
           <View style={styles.dragHandleRow}>
             <View style={styles.dragHandle} />
           </View>
@@ -118,9 +128,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     width: '100%',
-    maxHeight: '90%',
+    height: '88%',
+    maxHeight: '94%',
     paddingHorizontal: 22,
-    paddingBottom: 22,
     paddingTop: 10,
     shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: -4 },

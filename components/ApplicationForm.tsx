@@ -110,6 +110,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
     <View style={styles.container}>
       <ScrollView
         style={styles.formScroll}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -292,16 +293,25 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
       {/* Form Actions */}
       <View style={styles.actions}>
         <View style={styles.mainActions}>
-          <Pressable style={styles.btnGhost} onPress={onCancel}>
+          <Pressable
+            style={({ pressed }) => [styles.btnGhost, pressed && styles.btnGhostPressed]}
+            onPress={onCancel}
+          >
             <Text style={styles.btnGhostText}>Cancel</Text>
           </Pressable>
-          <Pressable style={styles.btnPrimary} onPress={handleSave}>
+          <Pressable
+            style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPrimaryPressed]}
+            onPress={handleSave}
+          >
             <Text style={styles.btnPrimaryText}>{submitButtonText}</Text>
           </Pressable>
         </View>
 
         {onDelete && initialData ? (
-          <Pressable style={styles.btnDanger} onPress={onDelete}>
+          <Pressable
+            style={({ pressed }) => [styles.btnDanger, pressed && { opacity: 0.7 }]}
+            onPress={onDelete}
+          >
             <Text style={styles.btnDangerText}>Delete</Text>
           </Pressable>
         ) : null}
@@ -316,6 +326,9 @@ const styles = StyleSheet.create({
   },
   formScroll: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   field: {
     marginBottom: 14,
@@ -444,6 +457,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  btnGhostPressed: {
+    backgroundColor: Colors.tray,
+  },
   btnGhostText: {
     fontSize: 14,
     fontWeight: '600',
@@ -457,6 +473,9 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  btnPrimaryPressed: {
+    backgroundColor: Colors.brandDark,
   },
   btnPrimaryText: {
     fontSize: 14,

@@ -15,8 +15,10 @@
         "WRITE_EXTERNAL_STORAGE"
       ],
       "adaptiveIcon": {
-        "backgroundColor": "#F7F8FB",
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
+        "backgroundColor": "#2F5FED",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       }
     },
     "web": {
@@ -30,7 +32,7 @@
         {
           "backgroundColor": "#2F5FED",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 100
+          "imageWidth": 150
         }
       ]
     ],

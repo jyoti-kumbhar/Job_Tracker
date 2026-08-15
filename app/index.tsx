@@ -6,10 +6,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
-  Pressable,
   BackHandler,
-  Platform,
-  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
@@ -18,26 +15,30 @@ import { Stats } from '../components/Stats';
 import { TabNav, TabType } from '../components/TabNav';
 import { SearchForm } from '../components/SearchForm';
 import { PortalCard } from '../components/PortalCard';
-import { JobCard } from '../components/JobCard';
 import { BoardView } from '../components/BoardView';
 import { ApplicationFormModal } from '../components/ApplicationFormModal';
 import { PrivacyFooter } from '../components/PrivacyFooter';
+import { StartingScreen } from '../components/StartingScreen';
 
 import { JobApplication, ApplicationFormData } from '../types/application';
-import { LiveJobItem } from '../types/job';
 import { SearchParams, JOB_PORTALS } from '../data/portals';
 import { useApplications } from '../hooks/useApplications';
 import { calculateStatistics } from '../utils/statistics';
 import { ApplicationStatus } from '../constants/statuses';
-import { searchLiveJobs } from '../services/liveJobsApi';
 import {
   exportApplicationsToFile,
   pickAndValidateImportFile,
   executeImport,
 } from '../services/export';
+import {
+  hasSeenStartingScreen,
+  setSeenStartingScreen,
+} from '../services/storage';
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('search');
+  const [showStartingScreen, setShowStartingScreen] = useState<boolean>(false);
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean>(false);
   const {
     applications,
     loading,
@@ -54,12 +55,23 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [editingApp, setEditingApp] = useState<JobApplication | null>(null);
 
-  // Live Jobs state
-  const [liveJobs, setLiveJobs] = useState<LiveJobItem[]>([]);
-  const [searchingJobs, setSearchingJobs] = useState<boolean>(false);
-  const [liveJobsError, setLiveJobsError] = useState<string | null>(null);
-  const [hasSearchedLive, setHasSearchedLive] = useState<boolean>(false);
-  const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
+  // Check if starting screen should be presented on first launch
+  useEffect(() => {
+    async function checkFirstLaunch() {
+      const seen = await hasSeenStartingScreen();
+      if (!seen) {
+        setIsFirstLaunch(true);
+        setShowStartingScreen(true);
+      }
+    }
+    checkFirstLaunch();
+  }, []);
+
+  const handleDismissStartingScreen = async () => {
+    await setSeenStartingScreen(true);
+    setShowStartingScreen(false);
+    setIsFirstLaunch(false);
+  };
 
   // Statistics calculation
   const stats = calculateStatistics(applications);
@@ -196,79 +208,23 @@ export default function HomeScreen() {
     }
   };
 
-
-  // Search Action for Live Job APIs and Search Prefs
+  // Search Action: Update search preferences for portal search cards
   const handleSearchSubmit = useCallback(
     async (params: SearchParams) => {
       await updateSearchPrefs(params);
-      setLastSearchParams(params);
-      setSearchingJobs(true);
-      setLiveJobsError(null);
-      setHasSearchedLive(true);
-
-      try {
-        const result = await searchLiveJobs(params);
-        if (result.error) {
-          setLiveJobsError(result.error);
-          setLiveJobs([]);
-        } else {
-          // Check which live jobs are already saved in local tracker
-          const savedLinks = new Set(
-            applications.map((app) => app.link?.trim().toLowerCase()).filter(Boolean)
-          );
-
-          const updatedJobs = result.jobs.map((job) => ({
-            ...job,
-            isSaved: savedLinks.has(job.url.trim().toLowerCase()),
-          }));
-
-          setLiveJobs(updatedJobs);
-        }
-      } catch {
-        setLiveJobsError('Network request failed. Please check your internet connection.');
-        setLiveJobs([]);
-      } finally {
-        setSearchingJobs(false);
-      }
     },
-    [applications, updateSearchPrefs]
+    [updateSearchPrefs]
   );
-
-  // Retry searching live jobs
-  const handleRetrySearch = () => {
-    if (lastSearchParams) {
-      handleSearchSubmit(lastSearchParams);
-    } else {
-      handleSearchSubmit(searchPrefs);
-    }
-  };
-
-  // Save live job listing directly to local application tracker
-  const handleSaveLiveJob = async (job: LiveJobItem) => {
-    try {
-      await handleSaveApplication({
-        company: job.company,
-        role: job.title,
-        link: job.url,
-        status: 'saved',
-        appliedDate: new Date().toISOString().split('T')[0],
-        notes: `Saved from live listings (${job.source})`,
-      });
-
-      // Update card UI to saved state
-      setLiveJobs((prev) =>
-        prev.map((j) => (j.id === job.id ? { ...j, isSaved: true } : j))
-      );
-    } catch {
-      Alert.alert('Error', 'Failed to save job to tracker');
-    }
-  };
 
   // Handle Android Hardware Back Button
   useEffect(() => {
     const onBackPress = () => {
       if (modalVisible) {
         setModalVisible(false);
+        return true;
+      }
+      if (showStartingScreen) {
+        setShowStartingScreen(false);
         return true;
       }
       if (activeTab === 'board') {
@@ -280,7 +236,7 @@ export default function HomeScreen() {
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => backSubscription.remove();
-  }, [modalVisible, activeTab]);
+  }, [modalVisible, showStartingScreen, activeTab]);
 
   const openNewEntryModal = () => {
     setEditingApp(null);
@@ -294,7 +250,10 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
-      <Header onNewEntry={openNewEntryModal} />
+      <Header
+        onNewEntry={openNewEntryModal}
+        onOpenStartingScreen={() => setShowStartingScreen(true)}
+      />
 
       <ScrollView
         style={styles.container}
@@ -320,58 +279,6 @@ export default function HomeScreen() {
           /* SEARCH TAB CONTENT */
           <View style={styles.tabContent}>
             <SearchForm onSearch={handleSearchSubmit} initialParams={searchPrefs} />
-
-            {/* Live Jobs Section */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>
-                  Live listings{' '}
-                  <Text style={styles.sectionSubtitle}>
-                    — real postings from public job APIs
-                  </Text>
-                </Text>
-                {liveJobs.length > 0 && !searchingJobs && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{liveJobs.length} found</Text>
-                  </View>
-                )}
-              </View>
-
-              {searchingJobs ? (
-                <View style={styles.spinnerBox}>
-                  <ActivityIndicator size="small" color={Colors.brand} />
-                  <Text style={styles.spinnerText}>Fetching open positions across public APIs...</Text>
-                </View>
-              ) : liveJobsError ? (
-                <View style={styles.errorBox}>
-                  <Text style={styles.errorTitle}>Connection Issue</Text>
-                  <Text style={styles.errorText}>{liveJobsError}</Text>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.retryBtn,
-                      pressed && styles.retryBtnPressed,
-                    ]}
-                    onPress={handleRetrySearch}
-                    accessibilityRole="button"
-                    accessibilityLabel="Retry Live Job Search"
-                  >
-                    <Text style={styles.retryBtnText}>Retry Search</Text>
-                  </Pressable>
-                </View>
-              ) : liveJobs.length > 0 ? (
-                liveJobs.map((job) => (
-                  <JobCard key={job.id} job={job} onSave={handleSaveLiveJob} />
-                ))
-              ) : (
-                <View style={styles.emptyNote}>
-                  <Text style={styles.emptyNoteText}>
-                    {hasSearchedLive
-                      ? 'No live postings found matching your search. Try adjusting keywords or location, or search directly on external portals below.'
-                      : 'Enter a role or keywords above and tap "Generate Search URLs" to fetch live job postings.'}
-                  </Text>
-                </View>
-              )}
-            </View>
 
             {/* Portal Search Section */}
             <View style={styles.section}>
@@ -413,6 +320,21 @@ export default function HomeScreen() {
         onSave={handleSaveApplication}
         onDelete={handleDeleteApplication}
       />
+
+      {/* Starting Screen / Welcome Guide Modal */}
+      <StartingScreen
+        visible={showStartingScreen}
+        onGetStarted={handleDismissStartingScreen}
+        onNewEntry={openNewEntryModal}
+        onOpenSearch={() => setActiveTab('search')}
+        onOpenBoard={() => setActiveTab('board')}
+        onImportBackup={handleImport}
+        onClose={() => setShowStartingScreen(false)}
+        totalApplications={applications.length}
+        activeInterviews={stats.interview}
+        totalOffers={stats.offer}
+        isFirstLaunch={isFirstLaunch}
+      />
     </SafeAreaView>
   );
 }
@@ -446,94 +368,15 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 10,
   },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
   sectionTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: Colors.ink,
-    flex: 1,
+    marginBottom: 10,
   },
   sectionSubtitle: {
     fontSize: 12,
     fontWeight: '500',
     color: Colors.slate,
-  },
-  badge: {
-    backgroundColor: Colors.brandSoft,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.brandDark,
-  },
-  spinnerBox: {
-    paddingVertical: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-  spinnerText: {
-    fontSize: 13,
-    color: Colors.slate,
-    fontWeight: '500',
-  },
-  emptyNote: {
-    backgroundColor: Colors.tray,
-    borderColor: Colors.border,
-    borderWidth: 1,
-    padding: 14,
-    borderRadius: 10,
-  },
-  emptyNoteText: {
-    fontSize: 12.5,
-    color: Colors.inkSoft,
-    lineHeight: 18,
-  },
-  errorBox: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FCA5A5',
-    borderWidth: 1,
-    padding: 16,
-    borderRadius: 10,
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  errorTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#991B1B',
-  },
-  errorText: {
-    fontSize: 12.5,
-    color: '#7F1D1D',
-    lineHeight: 18,
-  },
-  retryBtn: {
-    marginTop: 6,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-  retryBtnPressed: {
-    backgroundColor: '#B91C1C',
-  },
-  retryBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
   },
 });

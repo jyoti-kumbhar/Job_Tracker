@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors } from '../../constants/colors';
 import { ApplicationForm } from '../../components/ApplicationForm';
@@ -48,7 +49,7 @@ export default function EditApplicationScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.centerBox}>
           <ActivityIndicator size="large" color={Colors.brand} />
         </View>
@@ -58,7 +59,7 @@ export default function EditApplicationScreen() {
 
   if (!application) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.container}>
           <Text style={styles.errorText}>Application not found.</Text>
         </View>
@@ -67,7 +68,7 @@ export default function EditApplicationScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Edit entry</Text>

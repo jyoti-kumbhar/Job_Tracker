@@ -217,3 +217,28 @@ export async function getSearchPreferences(): Promise<Record<string, string>> {
 
 export const getSearchPrefs = getSearchPreferences;
 
+const STARTING_SCREEN_SEEN_KEY = '@job_tracker_has_seen_starting_screen';
+
+/**
+ * Checks whether the user has previously completed/seen the starting screen.
+ */
+export async function hasSeenStartingScreen(): Promise<boolean> {
+  try {
+    const val = await AsyncStorage.getItem(STARTING_SCREEN_SEEN_KEY);
+    return val === 'true';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Marks the starting screen as seen or unseen.
+ */
+export async function setSeenStartingScreen(seen: boolean = true): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STARTING_SCREEN_SEEN_KEY, seen ? 'true' : 'false');
+  } catch (e) {
+    console.error('Error saving starting screen state:', e);
+  }
+}
+

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/colors';
 import { ApplicationForm } from '../../components/ApplicationForm';
@@ -20,7 +21,7 @@ export default function NewApplicationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>New entry</Text>
