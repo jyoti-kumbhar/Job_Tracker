@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Colors } from '../constants/colors';
 import { STATUS_LIST, ApplicationStatus } from '../constants/statuses';
 import { JobApplication } from '../types/application';
@@ -24,12 +24,8 @@ export const BoardView: React.FC<BoardViewProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Mobile Quick Filter Bar */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterBar}
-      >
+      {/* Mobile Quick Filter Bar (Wrapping, no horizontal scroll) */}
+      <View style={styles.filterBar}>
         <Pressable
           style={({ pressed }) => [
             styles.filterChip,
@@ -74,14 +70,10 @@ export const BoardView: React.FC<BoardViewProps> = ({
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
 
-      {/* Kanban Board Columns Container */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.boardScrollContent}
-      >
+      {/* Kanban Board Columns Container (Vertical, full width, no horizontal scroll) */}
+      <View style={styles.boardContainer}>
         {filteredStatuses.map((st) => {
           const colApps = applications.filter((app) => app.status === st.id);
           return (
@@ -94,7 +86,7 @@ export const BoardView: React.FC<BoardViewProps> = ({
             />
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -102,19 +94,21 @@ export const BoardView: React.FC<BoardViewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 6,
   },
   filterBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 20,
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 7,
-    minHeight: 36,
+    minHeight: 34,
     borderRadius: 20,
     backgroundColor: Colors.surface,
     borderColor: Colors.borderStrong,
@@ -139,8 +133,9 @@ const styles = StyleSheet.create({
     color: Colors.brandDark,
     fontWeight: '700',
   },
-  boardScrollContent: {
+  boardContainer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
+    gap: 16,
   },
 });

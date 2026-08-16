@@ -90,9 +90,8 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
           </View>
 
           <Text style={styles.appName}>Job Tracker</Text>
-          <Text style={styles.appTagline}>// search once, apply everywhere</Text>
           <Text style={styles.appDescription}>
-            Your private, offline-first career hub for managing applications, tracking interviews, and exploring jobs across all major portals.
+            Private, offline-first application tracker and job portal search hub.
           </Text>
 
           {/* Value Badges */}
@@ -106,14 +105,11 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
             <View style={styles.badge}>
               <Text style={styles.badgeText}>📋 Kanban Pipeline</Text>
             </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>💾 JSON Backup</Text>
-            </View>
           </View>
         </View>
 
-        {/* Dynamic Status / Overview Banner */}
-        {totalApplications > 0 ? (
+        {/* Dynamic Status Banner (only when user has applications) */}
+        {totalApplications > 0 && (
           <View style={styles.statusBox}>
             <View style={styles.statusBoxHeader}>
               <Text style={styles.statusBoxTitle}>Pipeline Summary</Text>
@@ -140,16 +136,9 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
               </View>
             </View>
           </View>
-        ) : (
-          <View style={styles.statusBox}>
-            <Text style={styles.statusBoxTitle}>Ready to start your job hunt?</Text>
-            <Text style={styles.statusBoxSubtitle}>
-              Dispatch job searches to 9+ top portals with 1 tap, or log your first application below.
-            </Text>
-          </View>
         )}
 
-        {/* Quick Action Shortcuts */}
+        {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionHeading}>Quick Actions</Text>
           <View style={styles.quickGrid}>
@@ -182,7 +171,7 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
                 <Text style={styles.quickIcon}>📋</Text>
               </View>
               <Text style={styles.quickTitle}>Kanban Board</Text>
-              <Text style={styles.quickSub}>View pipeline stages</Text>
+              <Text style={styles.quickSub}>Pipeline stages</Text>
             </Pressable>
 
             {onNewEntry && (
@@ -199,7 +188,7 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
                   <Text style={styles.quickIcon}>➕</Text>
                 </View>
                 <Text style={styles.quickTitle}>New Entry</Text>
-                <Text style={styles.quickSub}>Log an application</Text>
+                <Text style={styles.quickSub}>Log application</Text>
               </Pressable>
             )}
 
@@ -217,7 +206,7 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
                   <Text style={styles.quickIcon}>📂</Text>
                 </View>
                 <Text style={styles.quickTitle}>Import Backup</Text>
-                <Text style={styles.quickSub}>Restore JSON data</Text>
+                <Text style={styles.quickSub}>Restore JSON</Text>
               </Pressable>
             )}
           </View>
@@ -233,9 +222,9 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
               <Text style={styles.stepNumberText}>1</Text>
             </View>
             <View style={styles.stepTextContent}>
-              <Text style={styles.stepTitle}>Multi-Portal Search in 1 Tap</Text>
+              <Text style={styles.stepTitle}>Multi-Portal Search</Text>
               <Text style={styles.stepDesc}>
-                Set your desired role, location, job type, and experience. Open pre-filled searches on LinkedIn, Indeed, Naukri, Glassdoor, Internshala, and Wellfound instantly.
+                Generate search links for LinkedIn, Indeed, Naukri, Glassdoor, and more.
               </Text>
             </View>
           </View>
@@ -246,9 +235,9 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
               <Text style={styles.stepNumberText}>2</Text>
             </View>
             <View style={styles.stepTextContent}>
-              <Text style={styles.stepTitle}>Organize with Kanban Stages</Text>
+              <Text style={styles.stepTitle}>Pipeline Tracking</Text>
               <Text style={styles.stepDesc}>
-                Track jobs across 5 distinct stages: Saved, Applied, Interview, Offer, and Rejected. Set deadline reminders and log interview rounds.
+                Track applications across Saved, Applied, Interview, Offer, and Rejected stages.
               </Text>
             </View>
           </View>
@@ -259,9 +248,9 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
               <Text style={styles.stepNumberText}>3</Text>
             </View>
             <View style={styles.stepTextContent}>
-              <Text style={styles.stepDescTextOnly}>
-                <Text style={styles.stepTitle}>Private & Local Forever: </Text>
-                No account, no tracking, and no external servers. Everything is stored on your device with one-click JSON backup & restore.
+              <Text style={styles.stepTitle}>Local & Private</Text>
+              <Text style={styles.stepDesc}>
+                Stored safely on your device with offline JSON backup & restore.
               </Text>
             </View>
           </View>
@@ -307,11 +296,8 @@ export const StartingScreen: React.FC<StartingScreenProps> = ({
 
         {/* Footer Note */}
         <View style={styles.footerNote}>
-          <Text style={styles.footerNoteText}>
-            Job Tracker • Offline-First Career Assistant
-          </Text>
           <Text style={styles.footerNoteSub}>
-            Tip: Tap the ⓘ icon in the top header anytime to reopen this guide.
+            Tip: Tap ⓘ in the header anytime to reopen this guide.
           </Text>
         </View>
       </ScrollView>
@@ -419,21 +405,15 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: Colors.ink,
     letterSpacing: -0.5,
-    marginBottom: 3,
-  },
-  appTagline: {
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: Colors.brand,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   appDescription: {
     fontSize: 13.5,
     fontWeight: '400',
     color: Colors.inkSoft,
     textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 8,
+    lineHeight: 19,
+    paddingHorizontal: 12,
     marginBottom: 16,
   },
   badgeRow: {
@@ -519,12 +499,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 28,
     backgroundColor: Colors.border,
-  },
-  statusBoxSubtitle: {
-    fontSize: 13,
-    color: Colors.slate,
-    lineHeight: 18.5,
-    marginTop: 4,
   },
   section: {
     marginTop: 10,
@@ -627,12 +601,6 @@ const styles = StyleSheet.create({
     color: Colors.inkSoft,
     lineHeight: 17,
   },
-  stepDescTextOnly: {
-    fontSize: 12,
-    color: Colors.inkSoft,
-    lineHeight: 17,
-    flex: 1,
-  },
   actionContainer: {
     marginTop: 10,
     gap: 10,
@@ -684,15 +652,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     paddingHorizontal: 12,
-    gap: 3,
-  },
-  footerNoteText: {
-    fontSize: 11.5,
-    color: Colors.slate,
-    fontWeight: '600',
   },
   footerNoteSub: {
-    fontSize: 10.5,
+    fontSize: 11,
     color: Colors.slate,
     textAlign: 'center',
   },
